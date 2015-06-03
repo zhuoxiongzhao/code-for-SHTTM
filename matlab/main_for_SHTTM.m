@@ -5,7 +5,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-
+clc,clear all,close all;
 %% load data
 test_data = load('test.data');
 train_data = load('train.data');
@@ -152,11 +152,11 @@ end
 result_gnd = zeros(size(Y_binary_code_test,2),2);
 result_gnd(:,2) = test_gnd;
 
-for j = 1:10
+for j = 1:size(rank_index,2)
     cal_vector = zeros( class_num, 1 );
     for i = 1:size(rank_index,1)
-        if rank_index(i)<=100
-            cal_vector(test_gnd(i)) = cal_vector(test_gnd(i))+1;
+        if rank_index(i,j)<=100
+            cal_vector(train_gnd(i)) = cal_vector(train_gnd(i))+1;
         end
     end
     result_gnd(j,1) = find(cal_vector==max(cal_vector),1);
@@ -170,7 +170,7 @@ for i = 1:size( test_gnd, 1 )
     end
 end
 accuracy = acc_num/size( test_gnd, 1 );
-
+save('test_result.mat', '')
 
 
 
