@@ -1,0 +1,48 @@
+begin call : initMatrixX
+end call : initMatrixX
+duration :  11.9230000973
+======================================================================================
+(53975L, 11269L)
+begin call : initMatrixT
+end call : initMatrixT
+duration :  0.0309998989105
+======================================================================================
+begin call : initMatrixC
+end call : initMatrixC
+duration :  0.0780000686646
+======================================================================================
+[[ 16.  16.  16. ...,  16.  16.  16.]
+ [ 16.  16.  16. ...,  16.  16.  16.]
+ [ 16.  16.  16. ...,  16.  16.  16.]
+ [ 16.  16.  16. ...,  16.  16.  16.]
+ [ 16.  16.  16. ...,  16.  16.  16.]
+ [ 32.  32.  32. ...,  32.  32.  32.]]
+(6L, 11269L)
+begin call : initY
+end call : initY
+duration :  0.0
+======================================================================================
+(6L, 11269L)
+begin call : coordinateDescent
+===UIUIUI===
+===UIUIUI===
+===UIUIUI===
+===UIUIUI===
+===UIUIUI===
+===UIUIUI===
+end call : coordinateDescent
+duration :  519.085999966
+======================================================================================
+(6L, 11269L)
+(6L, 6L)
+begin call : obtainW
+Traceback (most recent call last):
+  File "Main.py", line 355, in <module>
+    # 步骤五，计算哈希函数 W
+  File "Main.py", line 17, in wrapper
+    result = func(*args, **kw)
+  File "Main.py", line 216, in obtainW
+    # W = np.zeros((numOfDimen, numOfCode))
+MemoryError
+
+***Repl Closed***
