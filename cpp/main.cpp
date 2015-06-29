@@ -11,6 +11,7 @@
 #include <Eigen/Dense>
 #include <Eigen/Sparse>
 #include <vector>
+#include <fstream>
 using namespace std;
 using namespace Eigen;
 
@@ -28,12 +29,13 @@ void Shape (const Mat &a)
 }
 
 // Initial Data
-int AValue = 32;
-int BValue = 16;
-int ALPHA = 32;
-int GAMMA = 32;
-int LAMDA = 32;
-int ITERATION_TIME = 1;
+double AValue = 1;
+double BValue = 0.01;
+double ALPHA = 1;
+double GAMMA = 1;
+double LAMDA = 1;
+int ITERATION_TIME = 10;
+int map_vector[] = {5,0,0,0,0,0,3,1,1,1,1,2,2,2,2,5,4,4,4,4};
 
 // to be modified.
 Mat T, C, Y, U, W, Theta;
@@ -42,7 +44,7 @@ SpMat X;
 int numOfDoc = 11269;
 int numOfTag = 6;
 int numOfCod = 6;
-int numOfDem = 53975;
+int numOfDem = 61188;
 
 void obtainYandU ()
 {
@@ -83,25 +85,39 @@ void obtainYandU ()
 
 void obtainW ()
 {
-	Mat w0 = Y*(X.transpose());
+	Mat w0 = X*(Y.transpose());
 	SpMat I(numOfDem, numOfDem);
 	vector<Trip> v;
 	for (int i = 0; i < numOfDem; ++ i) v.push_back(Trip(i,i,1));
 	I.setFromTriplets(v.begin(), v.end());
-	SpMat w1 = (X*(X.transpose())).pruned(0, 1) + LAMDA*I;
-	// W = w0 * (w1)^-1
+	
+	// pruned number
+	SpMat w1 = ((X*(X.transpose())).pruned(1) + LAMDA*I).transpose();
+	
+	
+	//w1 * W' =  w0
+	SparseQR<SpMat, COLAMDOrdering<int> > linearSolver;
+	linearSolver.compute(w1);
+	W = Mat::Zero(numOfCod, numOfDem);
+	for (int i = 0; i < numOfCod; ++ i)
+	{
+		VectorXd vec(numOfDem);
+		for (int j = 0; j < numOfDem; ++ j)
+			vec[j] = w0(j, i);
+		W.row(i)=linearSolver.solve(vec);
+	}
 }
 
 void obtainMedian ()
 {
 	M=Mat(numOfDoc, 1);
-	for (int i = 0; i < numOfDoc; ++ i)
+	for (int i = 0; i < numOfCod; ++ i)
 	{
 		vector<double> v;
-		for (int j = 0; j < numOfCod; ++ j)
-			v.push_back(Y(j, i));
+		for (int j = 0; j < numOfDoc; ++ j)
+			v.push_back(Y(i, j));
 		sort(v.begin(), v.end());
-		M(i, 0) = (v[numOfCod/2] + v[numOfCod-1-numOfCod/2])/2;
+		M(i, 0) = (v[numOfDoc/2] + v[numOfDoc-1-numOfDoc/2])/2;
 	}
 }
 
@@ -112,17 +128,55 @@ Mat convertY (Mat Y)
 	{
 		for (int i = 0; i < Y.rows(); ++ i)
 		{
-			if ( Y(i, j) > M(j) ) YH(i, j) = 1;
+			if ( Y(i, j) > M(i, 0) ) YH(i, j) = 1;
 			else YH(i, j) = -1;
 		}
 	}
 	return YH;
 }
 
+void formX (SpMat &X, int num, const char* path) {
+	X = SpMat(numOfDem, num);
+	vector<Trip> vec; 
+	fstream in(path);
+	int i, j;double k;
+	while (in>>j>>i>>k)
+		vec.push_back(Trip(i-1,j-1,k));
+	X.setFromTriplets(vec.begin(), vec.end());
+	in.close();
+}
+
+void formT (Mat &T, int num, const char* path) {
+	T = Mat::Zero(numOfTag, num);
+	fstream in(path);
+	int i, id = 0;
+	while (in>>i)
+		T(map_vector[i-1], id++) = 1;
+	in.close();
+}
+
+void outputMat (Mat &Q, const char* path) {
+	ofstream out(path);
+	out<<Q.rows()<<" "<<Q.cols()<<endl;
+	for (int i = 0; i < Q.rows(); ++ i) {
+		for (int j = 0; j < Q.cols(); ++ j)
+			out << Q(i, j) << " ";
+		out << endl;
+	}
+	out.close();
+}
+
+void init ()
+{
+	formX(X, numOfDoc, "./train.data");
+	formT(T, numOfDoc, "./train.label");
+}
+
 int main ()
 {
-	puts("The program consists of 7 steps!");
+	puts("The program consists of 6 steps!");
 	puts("Step 1: Get LDA Value and Init Data Start");
+	init ();
 	puts("Step 1: Get LDA Value and Init Data Finish");
 		
 	// Step 2: Construct Confidence Matrix C
@@ -151,9 +205,9 @@ int main ()
 	Mat YH = convertY(Y);
 	puts("Step 6: Calculate hashcode Matrix YH Finish");
 	
-	// Step 7: test answer!
-	puts("Step 7: Testing start!");
-	
-	puts("Step 7: Testing Finish!");
+	outputMat(W, "W.data");
+	outputMat(M, "M.data");
+	outputMat(YH, "YH.data");
+	outputMat(U, "U.data");
 	return 0;
 }
