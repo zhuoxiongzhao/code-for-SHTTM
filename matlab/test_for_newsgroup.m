@@ -296,7 +296,7 @@ distance_matrix = zeros(size(Y_binary_code_test,2),size(Y_binary_code_train,2));
 for i = 1:size(Y_binary_code_test,2)
     i
     % for j = 1:size(Y_binary_code_train,2)
-    for j =1:10
+    for j =1:size(Y_binary_code_train,2)
         distance_matrix(i,j) = pdist2(Y_binary_code_test(:,i)',Y_binary_code_train(:,j)','hamming');
     end
 end
@@ -308,7 +308,7 @@ end
 result_gnd = zeros(size(Y_binary_code_train,2),2);
 result_gnd(:,2) = train_gnd;
 
-for j = 1:10
+for j = 1:size(Y_binary_code_train,2)
     cal_vector = zeros( class_num, 1 );
     for i = 1:size(rank_index,1)
         if rank_index(i)<=100
