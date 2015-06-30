@@ -114,7 +114,7 @@ void obtainW ()
 
 void obtainMedian ()
 {
-	M=Mat(numOfDoc, 1);
+	M=Mat(numOfCod, 1);
 	for (int i = 0; i < numOfCod; ++ i)
 	{
 		vector<double> v;
