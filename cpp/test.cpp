@@ -29,27 +29,20 @@ void Shape (const Mat &a)
 }
 
 // Initial Data
-double AValue = 1;
-double BValue = 0.01;
-double ALPHA = 1;
-double GAMMA = 1;
-double LAMDA = 1;
-int ITERATION_TIME = 10;
 int map_vector[] = {5,0,0,0,0,0,3,1,1,1,1,2,2,2,2,5,4,4,4,4};
 
 // to be modified.
-Mat T, C, Y, U, W, Theta;
+Mat T, Y, W;
 Mat M;
 SpMat X;
 
 //YH train YH2 test
 Mat YH, YH2;
 
-int numOfDocTrain = 11269;
-int numOfDocTest = 7505;
-int numOfTag = 6;
-int numOfCod = 6;
-int numOfDem = 61188;
+const int numOfDocTrain = 11269;
+const int numOfDocTest = 7505;
+const int numOfTag = 6;
+const int numOfDem = 61188;
 
 Mat convertY (Mat Y)
 {
@@ -85,12 +78,11 @@ void formT (Mat &T, int num, const char* path) {
 	in.close();
 }
 
-void formGnd (Mat &G, int num, const char* path) {
-	G = Mat::Zero(num, 1);
+void formGnd (int G[], const char* path) {
 	fstream in(path);
 	int i, id = 0;
 	while (in>>i)
-		G(id++) = map_vector[i-1];
+		G[id++] = map_vector[i-1];
 	in.close();
 }
 
@@ -116,14 +108,14 @@ void outputMat (Mat &Q, const char* path) {
 	out.close();
 }
 
-Mat G_train, G_test;
+int G_train[numOfDocTrain], G_test[numOfDocTest];
 
 void init ()
 {
 	formX(X, numOfDocTest, "./test.data");
 	formT(T, numOfDocTest, "./test.label");
-	formGnd(G_train, numOfDocTrain, "./train.label");
-	formGnd(G_test, numOfDocTest, "./test.label");
+	formGnd(G_train, "./train.label");
+	formGnd(G_test, "./test.label");
 	inputMat(W, "W.data");
 	inputMat(M, "M.data");
 	inputMat(YH, "YH.data");
@@ -138,39 +130,31 @@ int main ()
 	init ();
 	Y = W * X;
 	YH2 = convertY(Y);
-	Mat dis = Mat::Zero(YH.cols(), YH2.cols());
-	// hamming distance
-	for (int i = 0; i < YH.cols(); ++ i)
+
+	// hamming dis and acc num
+	int acc_num = 0;
+	for (int i = 0; i < YH2.cols(); ++ i)
 	{
-		for (int j = 0; j < YH2.cols(); ++ j)
+		vector<pair<int, int> > vs;
+		for (int j = 0; j < YH.cols(); ++ j)
 		{
+			int dis = 0;
 			for (int k = 0; k < YH.rows(); ++ k)
-			{
-				if (YH(k, i) != YH2(k, j)) dis(i, j) ++;
-			}
+				if (YH2(k, i) != YH(k, j)) dis ++;
+			vs.push_back(make_pair(dis, G_train[j]));
 		}
+		sort(vs.begin(), vs.end());
+		int cnt[numOfTag] = {0}, id = 0;
+		for (int i = 0; i < 100; ++ i)
+			cnt[ vs[i].second ] ++;
+		for (int i = 0; i < numOfTag; ++ i) if (cnt[i] > cnt[id])
+			id = i;
+		
+		if (id == G_test[i]) acc_num++;
 	}
 	
-	int acc_num = 0;
-	for (int j = 0; j < YH2.cols(); ++ j)
-	{
-		vector<pair<double, int> > vs;
-		for (int i = 0; i < YH.cols(); ++ i)
-			vs.push_back(make_pair(dis(i, j), G_train(i)));
-		sort(vs.begin(), vs.end());
-		
-		Mat cnt = Mat::Zero(numOfTag, 1);
-		for (int i = 0; i < 100; ++ i) 
-			cnt(vs[i].second, 0) ++;
-		
-		int id = 0;
-		for (int i = 0; i < numOfTag; ++ i) if (cnt(i, 0) > cnt(id, 0))
-			id = i;
-			
-		if (id == G_test(j)) acc_num ++;
-	}
 	printf("ACC NUM IS %d\n", acc_num);
-	printf("ACC Percent is %.6f\n", acc_num*1. / YH2.cols());
+	printf("ACC Percent is %.6f\n", acc_num*1. / numOfDocTest);
 	puts("Testing Finish!");
 	return 0;
 }

@@ -29,8 +29,8 @@ void Shape (const Mat &a)
 }
 
 // Initial Data
-double AValue = 1;
-double BValue = 0.01;
+double AValue = 0.01;
+double BValue = 1;
 double ALPHA = 1;
 double GAMMA = 1;
 double LAMDA = 1;
@@ -41,17 +41,19 @@ int map_vector[] = {5,0,0,0,0,0,3,1,1,1,1,2,2,2,2,5,4,4,4,4};
 Mat T, C, Y, U, W, Theta;
 Mat M;
 SpMat X;
-int numOfDoc = 11269;
-int numOfTag = 6;
-int numOfCod = 6;
-int numOfDem = 61188;
+const int numOfDoc = 11269;
+const int numOfTag = 6;
+const int numOfCod = 6;
+const int numOfDem = 61188;
 
 void obtainYandU ()
 {
 	Y = Theta;
+	U = Mat::Zero(numOfCod, numOfTag);
 	Mat I = Mat::Identity(numOfCod, numOfCod);
 	for (int _=1;_<=ITERATION_TIME;++_)
 	{
+		cout << "Iter time " << _ << endl;
 		// for U
 		for (int i = 0; i < numOfTag; ++ i)
 		{
@@ -70,7 +72,7 @@ void obtainYandU ()
 		// for Y
 		for (int i = 0; i < numOfDoc; ++ i)
 		{
-			Mat CI = Mat::Identity(numOfTag, numOfTag);
+			Mat CI = Mat::Zero(numOfTag, numOfTag);
 			for (int j = 0; j < numOfTag; ++ j)
 				CI(j, j) = C(j, i);
 			
@@ -155,6 +157,17 @@ void formT (Mat &T, int num, const char* path) {
 	in.close();
 }
 
+void inputMat (Mat &Q, const char* path) {
+	fstream in(path);
+	int numI, numJ;
+	in >> numI >> numJ;
+	Q = Mat::Zero(numI, numJ);
+	for (int i = 0; i < numI; ++ i)
+		for (int j = 0; j < numJ; ++ j)
+			in >> Q(i, j);
+	in.close();
+}
+
 void outputMat (Mat &Q, const char* path) {
 	ofstream out(path);
 	out<<Q.rows()<<" "<<Q.cols()<<endl;
@@ -170,6 +183,7 @@ void init ()
 {
 	formX(X, numOfDoc, "./train.data");
 	formT(T, numOfDoc, "./train.label");
+	inputMat(Theta, "./theta.data");
 }
 
 int main ()
