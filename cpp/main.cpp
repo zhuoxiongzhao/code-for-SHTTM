@@ -59,14 +59,12 @@ void obtainYandU ()
 		{
 			SpMat CI(numOfDoc, numOfDoc);
 			vector<Trip> v;
-			for (int j = 0; j < numOfDoc; ++ j)
+			for (int j = 0; j < numOfDoc; ++ j) 
 				v.push_back(Trip(j,j,C(i,j)));
 			CI.setFromTriplets(v.begin(), v.end());
-			
 			Mat TI(numOfDoc, 1);
 			for (int j = 0; j < numOfDoc; ++ j)
 				TI(j, 0) = T(i, j);
-			
 			U.col(i)=(Y*CI*(Y.transpose())+ALPHA*I).inverse()*Y*CI*TI;
 		}
 		// for Y
@@ -93,9 +91,11 @@ void obtainW ()
 	for (int i = 0; i < numOfDem; ++ i) v.push_back(Trip(i,i,1));
 	I.setFromTriplets(v.begin(), v.end());
 	
-	// pruned number
+	// pruned number  
 	SpMat w1 = ((X*(X.transpose())).pruned(1) + LAMDA*I).transpose();
 	
+	
+	printf("X*XT finished\n");
 	
 	//w1 * W' =  w0
 	SparseQR<SpMat, COLAMDOrdering<int> > linearSolver;
@@ -103,6 +103,8 @@ void obtainW ()
 	W = Mat::Zero(numOfCod, numOfDem);
 	for (int i = 0; i < numOfCod; ++ i)
 	{
+		printf("num %d\n", i);
+		
 		VectorXd vec(numOfDem);
 		for (int j = 0; j < numOfDem; ++ j)
 			vec[j] = w0(j, i);
@@ -188,36 +190,37 @@ void init ()
 
 int main ()
 {
+	int st = clock ();
 	puts("The program consists of 6 steps!");
 	puts("Step 1: Get LDA Value and Init Data Start");
 	init ();
-	puts("Step 1: Get LDA Value and Init Data Finish");
+	printf("Step 1: Get LDA Value and Init Data Finish %dms\n", clock()-st);
 		
 	// Step 2: Construct Confidence Matrix C
 	puts("Step 2: Construct Confidence Matrix C Start");
-	Mat C = T*(BValue-AValue) + Mat::Ones(T.rows(), T.cols())*AValue;
-	puts("Step 2: Construct Confidence Matrix C Finish");
-	
+	C = T*(BValue-AValue) + Mat::Ones(T.rows(), T.cols())*AValue;
+	printf("Step 2: Construct Confidence Matrix C Finish %dms\n", clock()-st);
+
 	// Step 3: Calculate Y and U
 	puts("Step 3: Calculate Y and U Start");
 	obtainYandU();
-	puts("Step 3: Calculate Y and U Finish");
+	printf("Step 3: Calculate Y and U Finish %dms\n", clock()-st);
 
 	
 	// Step 4: Calculate W
 	puts("Step 4: Calculate W Start");
 	obtainW();
-	puts("Step 4: Calculate W Finish");
+	printf("Step 4: Calculate W Finish %dms\n", clock()-st);
 	
 	// Step 5: Calculate Median Vector
 	puts("Step 5: Calculate Median Vector Start");
 	obtainMedian();
-	puts("Step 5: Calculate Median Vector Finish");
+	printf("Step 5: Calculate Median Vector Finish %dms\n", clock()-st);
 	
 	// Step 6: Calculate the hashcode Matrix YH
 	puts("Step 6: Calculate hashcode Matrix YH Start");
 	Mat YH = convertY(Y);
-	puts("Step 6: Calculate hashcode Matrix YH Finish");
+	printf("Step 6: Calculate hashcode Matrix YH Finish %dms\n", clock()-st);
 	
 	outputMat(W, "W.data");
 	outputMat(M, "M.data");
