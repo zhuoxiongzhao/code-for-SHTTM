@@ -194,33 +194,33 @@ int main ()
 	puts("The program consists of 6 steps!");
 	puts("Step 1: Get LDA Value and Init Data Start");
 	init ();
-	printf("Step 1: Get LDA Value and Init Data Finish %dms\n", clock()-st);
+	printf("Step 1: Get LDA Value and Init Data Finish %lums\n", clock()-st);
 		
 	// Step 2: Construct Confidence Matrix C
 	puts("Step 2: Construct Confidence Matrix C Start");
 	C = T*(BValue-AValue) + Mat::Ones(T.rows(), T.cols())*AValue;
-	printf("Step 2: Construct Confidence Matrix C Finish %dms\n", clock()-st);
+	printf("Step 2: Construct Confidence Matrix C Finish %lums\n", clock()-st);
 
 	// Step 3: Calculate Y and U
 	puts("Step 3: Calculate Y and U Start");
 	obtainYandU();
-	printf("Step 3: Calculate Y and U Finish %dms\n", clock()-st);
+	printf("Step 3: Calculate Y and U Finish %lums\n", clock()-st);
 
 	
 	// Step 4: Calculate W
 	puts("Step 4: Calculate W Start");
 	obtainW();
-	printf("Step 4: Calculate W Finish %dms\n", clock()-st);
+	printf("Step 4: Calculate W Finish %lums\n", clock()-st);
 	
 	// Step 5: Calculate Median Vector
 	puts("Step 5: Calculate Median Vector Start");
 	obtainMedian();
-	printf("Step 5: Calculate Median Vector Finish %dms\n", clock()-st);
+	printf("Step 5: Calculate Median Vector Finish %lums\n", clock()-st);
 	
 	// Step 6: Calculate the hashcode Matrix YH
 	puts("Step 6: Calculate hashcode Matrix YH Start");
 	Mat YH = convertY(Y);
-	printf("Step 6: Calculate hashcode Matrix YH Finish %dms\n", clock()-st);
+	printf("Step 6: Calculate hashcode Matrix YH Finish %lums\n", clock()-st);
 	
 	outputMat(W, "W.data");
 	outputMat(M, "M.data");
