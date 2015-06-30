@@ -5,7 +5,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-clc,clear all,close all;
+clear , close all, clc;
 %% load data
 test_data = load('test.data');
 train_data = load('train.data');
@@ -50,12 +50,12 @@ for i = 1:size(nor_DP,1)
         nor_DP(i,j) = DP(i,j)/sum(DP(i,:));
     end
 end
-xita = nor_DP';
+xita = nor_DP';   % k*n
 
 
 %% train & test fea
 disp('convert into sparse fea');
-fea_X_train = spalloc( size(WO,1), size(train_gnd, 1), size(train_data,1) );
+fea_X_train = spalloc( size(WO,1), size(train_gnd, 1), size(train_data,1) );   % m*n
 for sample_i = 1:size(train_data,1)
     fea_X_train(train_data(sample_i,2),train_data(sample_i,1)) = train_data(sample_i,3);
 end
@@ -107,10 +107,10 @@ for iter = 1:10;
         Y_hashing_code( :, j ) = (latent_variable_U*diag(confidence_matrix_C( :, j ))*latent_variable_U'+gamma*eye(num_of_bit))\(latent_variable_U*diag(confidence_matrix_C( :, j ))*tag_T(:,j)+gamma+xita(:,j));
     end
 end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% to here
 
-
-%% to cal parameter metrix W
-disp('cal parameter metrix W');
+%% to cal parameter matrix W
+disp('cal parameter matrix W');
 identify_eye = spalloc( size(fea_X_train,1), size(fea_X_train,1), size(fea_X_train,1) );
 for i = 1:size(fea_X_train,1)
     identify_eye(i,i) = 1;
@@ -124,7 +124,7 @@ toc;
 disp('cal Y_hashing_code_project');
 Y_project_train = parameter_matrix_W*fea_X_train;
 m_median_vector = median( Y_project_train, 2 );
-Y_binary_code_train = Y_project_train>=repmat(m_median_vector,[1,size(Y_project_train,2)]);
+Y_binary_code_train = Y_project_train>repmat(m_median_vector,[1,size(Y_project_train,2)]);
 Y_binary_code_train = Y_binary_code_train*2-1;
 
 save('train_result.mat', 'Y_project_train', 'Y_binary_code_train', 'parameter_matrix_W', 'm_median_vector');
@@ -134,7 +134,7 @@ save('train_result.mat', 'Y_project_train', 'Y_binary_code_train', 'parameter_ma
 %% for test
 disp('testing');
 Y_project_test = parameter_matrix_W*fea_X_test;
-Y_binary_code_test = Y_project_test>=repmat(m_median_vector,[1,size(Y_project_test,2)]);
+Y_binary_code_test = Y_project_test>repmat(m_median_vector,[1,size(Y_project_test,2)]);
 Y_binary_code_test = Y_binary_code_test*2-1;
 
 distance_matrix = zeros(size(Y_binary_code_train,2),size(Y_binary_code_test,2));
@@ -152,15 +152,26 @@ end
 result_gnd = zeros(size(Y_binary_code_test,2),2);
 result_gnd(:,2) = test_gnd;
 
+
 for j = 1:size(rank_index,2)
     cal_vector = zeros( class_num, 1 );
-    for i = 1:size(rank_index,1)
-        if rank_index(i,j)<=100
-            cal_vector(train_gnd(i)) = cal_vector(train_gnd(i))+1;
-        end
+    for i = 1:1000
+        cal_vector(train_gnd(rank_index(i,j))) = cal_vector(train_gnd(rank_index(i,j)))+1;
     end
     result_gnd(j,1) = find(cal_vector==max(cal_vector),1);
 end
+
+
+
+% for j = 1:size(rank_index,2)
+%     cal_vector = zeros( class_num, 1 );
+%     for i = 1:size(rank_index,1)
+%         if rank_index(i,j)<=100
+%             cal_vector(train_gnd(i)) = cal_vector(train_gnd(i))+1;
+%         end
+%     end
+%     result_gnd(j,1) = find(cal_vector==max(cal_vector),1);
+% end
 
 
 acc_num = 0;
@@ -170,7 +181,7 @@ for i = 1:size( test_gnd, 1 )
     end
 end
 accuracy = acc_num/size( test_gnd, 1 );
-save('test_result.mat', '')
+
 
 
 
