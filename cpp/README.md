@@ -1,4 +1,4 @@
-#Matlab version for SHTTM
+#CPP version for SHTTM
 
 ---
 
