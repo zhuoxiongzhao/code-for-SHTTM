@@ -28,6 +28,13 @@ void Shape (const Mat &a)
 	cout<<a.rows()<<" "<<a.cols()<<endl;
 }
 
+clock_t st;
+
+void caltime ()
+{
+	printf("Time pass: %lu\n", (clock()-st) / CLOCKS_PER_SEC);
+}
+
 // Initial Data
 int map_vector[] = {5,0,0,0,0,0,3,1,1,1,1,2,2,2,2,5,4,4,4,4};
 
@@ -112,6 +119,7 @@ int G_train[numOfDocTrain], G_test[numOfDocTest];
 
 void init ()
 {
+	st = clock();
 	formX(X, numOfDocTest, "./test.data");
 	formT(T, numOfDocTest, "./test.label");
 	formGnd(G_train, "./train.label");

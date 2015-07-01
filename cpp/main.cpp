@@ -28,6 +28,13 @@ void Shape (const Mat &a)
 	cout<<a.rows()<<" "<<a.cols()<<endl;
 }
 
+clock_t st;
+
+void caltime ()
+{
+	printf("Time pass: %lu\n", (clock()-st) / CLOCKS_PER_SEC);
+}
+
 // Initial Data
 double AValue = 0.01;
 double BValue = 1;
@@ -83,23 +90,39 @@ void obtainYandU ()
 	}
 }
 
+const int totTrain = 1467345;
+int a[totTrain], b[totTrain], c[totTrain];
 void obtainW ()
 {
 	Mat w0 = X*(Y.transpose());
-	SpMat I(numOfDem, numOfDem);
+	SpMat w1(numOfDem, numOfDem);
 	vector<Trip> v;
-	for (int i = 0; i < numOfDem; ++ i) v.push_back(Trip(i,i,1));
-	I.setFromTriplets(v.begin(), v.end());
+	for (int i = 0; i < numOfDem; ++ i) v.push_back(Trip(i,i,LAMDA));
 	
-	// pruned number  
-	SpMat w1 = ((X*(X.transpose())).pruned(1) + LAMDA*I).transpose();
-	
+	ifstream in ("train.data");
+	for (int q = 0; q < totTrain; ++ q)
+		in >> a[q] >> b[q] >> c[q];
+	int las = 0;
+	for (int q = 0; q <= totTrain; ++ q) {
+		if (q==totTrain || a[q] != a[las]) {
+			for (int i = las; i < q; ++ i) {
+				for (int j = las; j < q; ++ j) if (c[i] * c[j] > 4)
+				{
+					v.push_back(Trip(b[i], b[j], c[i]*c[j]));
+				}
+			}
+			las = q;
+		}
+	}
+	in.close();
+	w1.setFromTriplets(v.begin(), v.end());
 	
 	printf("X*XT finished\n");
+	caltime();
 	
 	//w1 * W' =  w0
 	SparseQR<SpMat, COLAMDOrdering<int> > linearSolver;
-	linearSolver.compute(w1);
+	linearSolver.compute(w1.transpose());
 	W = Mat::Zero(numOfCod, numOfDem);
 	for (int i = 0; i < numOfCod; ++ i)
 	{
@@ -183,6 +206,7 @@ void outputMat (Mat &Q, const char* path) {
 
 void init ()
 {
+	st = clock();
 	formX(X, numOfDoc, "./train.data");
 	formT(T, numOfDoc, "./train.label");
 	inputMat(Theta, "./theta.data");
@@ -190,37 +214,41 @@ void init ()
 
 int main ()
 {
-	int st = clock ();
 	puts("The program consists of 6 steps!");
 	puts("Step 1: Get LDA Value and Init Data Start");
 	init ();
-	printf("Step 1: Get LDA Value and Init Data Finish %lums\n", clock()-st);
+	puts("Step 1: Get LDA Value and Init Data Finish");
+	caltime();
 		
 	// Step 2: Construct Confidence Matrix C
 	puts("Step 2: Construct Confidence Matrix C Start");
 	C = T*(BValue-AValue) + Mat::Ones(T.rows(), T.cols())*AValue;
-	printf("Step 2: Construct Confidence Matrix C Finish %lums\n", clock()-st);
+	puts("Step 2: Construct Confidence Matrix C Finish");
+	caltime();
 
 	// Step 3: Calculate Y and U
 	puts("Step 3: Calculate Y and U Start");
 	obtainYandU();
-	printf("Step 3: Calculate Y and U Finish %lums\n", clock()-st);
-
+	puts("Step 3: Calculate Y and U Finish");
+	caltime();
 	
 	// Step 4: Calculate W
 	puts("Step 4: Calculate W Start");
 	obtainW();
-	printf("Step 4: Calculate W Finish %lums\n", clock()-st);
+	puts("Step 4: Calculate W Finish");
+	caltime();
 	
 	// Step 5: Calculate Median Vector
 	puts("Step 5: Calculate Median Vector Start");
 	obtainMedian();
-	printf("Step 5: Calculate Median Vector Finish %lums\n", clock()-st);
+	puts("Step 5: Calculate Median Vector Finish");
+	caltime();
 	
 	// Step 6: Calculate the hashcode Matrix YH
 	puts("Step 6: Calculate hashcode Matrix YH Start");
 	Mat YH = convertY(Y);
-	printf("Step 6: Calculate hashcode Matrix YH Finish %lums\n", clock()-st);
+	puts("Step 6: Calculate hashcode Matrix YH Finish");
+	caltime();
 	
 	outputMat(W, "W.data");
 	outputMat(M, "M.data");
