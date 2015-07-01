@@ -108,7 +108,7 @@ void obtainW ()
 			for (int i = las; i < q; ++ i) {
 				for (int j = las; j < q; ++ j) if (c[i] * c[j] > 4)
 				{
-					v.push_back(Trip(b[i], b[j], c[i]*c[j]));
+					v.push_back(Trip(b[i]-1, b[j]-1, c[i]*c[j]));
 				}
 			}
 			las = q;
