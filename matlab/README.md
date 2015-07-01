@@ -13,6 +13,5 @@ W=Y\*X'\*(X\*X'+Lamda\*I)
 
 Power by Zhuoxiong Zhao<br/>
 ------------------
-# Please contact e-mail
-zhuoxiong.zhao@gmail.com
+Please contact e-mail : zhuoxiong.zhao@gmail.com
 
