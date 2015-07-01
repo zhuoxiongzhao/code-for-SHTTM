@@ -28,7 +28,8 @@ public static void main(String[] args)
 ```
     Hashing code for each Document
 ```
- - LDA
+ - LDA For java
+ - LDA4j
 ```
     LDA Gibbs Sampling
 ```
