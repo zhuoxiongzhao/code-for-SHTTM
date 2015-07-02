@@ -10,3 +10,11 @@ Use for what?
 ------------
 You can use these codes for your research interest but commercial profit.<br\>
 Copyright reserved by H.F.T.I.T.M. Group @ South China University of Technology.
+Have question?
+------------
+Please contact:<br\>
+zhuoxiong.zhao@gmail.com<br\>
+kuyasinaki@gmail.com<br\>
+kkrimen@gmail.com<br\>
+295861096@qq.com<br\>
+450586509@qq.com
